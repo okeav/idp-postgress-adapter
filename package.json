@@ -1,6 +1,6 @@
 {
   "name": "@okeav/idp-core-postgres",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "PostgreSQL storage adapter for @okeav/idp-core.",
   "type": "module",
   "license": "MIT",
