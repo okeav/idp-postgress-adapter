@@ -7,12 +7,12 @@
   "author": "Okeav",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/adaptiveedge/idp-postgress-adapter.git"
+    "url": "git+https://github.com/okeav/idp-postgress-adapter.git"
   },
   "bugs": {
-    "url": "https://github.com/adaptiveedge/idp-postgress-adapter/issues"
+    "url": "https://github.com/okeav/idp-postgress-adapter/issues"
   },
-  "homepage": "https://github.com/adaptiveedge/idp-postgress-adapter#readme",
+  "homepage": "https://github.com/okeav/idp-postgress-adapter#readme",
   "publishConfig": {
     "access": "public"
   },

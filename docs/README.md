@@ -1,7 +1,7 @@
 # @okeav/idp-core-postgres Documentation
 
 Reference documentation and a runnable example for
-[`@okeav/idp-core-postgres`](https://github.com/adaptiveedge/idp-postgress-adapter) — a PostgreSQL
+[`@okeav/idp-core-postgres`](https://github.com/okeav/idp-postgress-adapter) — a PostgreSQL
 storage adapter for [`@okeav/idp-core`](../../identity). It implements all eight of idp-core's
 storage repository interfaces (users, sessions, OAuth2 authorization codes/clients/consents,
 verification tokens, service keys, WebAuthn credentials) against a plain relational schema, using
