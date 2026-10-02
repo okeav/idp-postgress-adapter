@@ -5,8 +5,10 @@ A PostgreSQL storage adapter for [`@okeav/idp-core`](../identity) — implements
 ## Install
 
 ```bash
-npm install @okeav/idp-core-postgres pg
+npm install @okeav/idp-core @okeav/idp-core-postgres pg
 ```
+
+`@okeav/idp-core` is a peer dependency (`^0.2.1`), so npm flags an incompatible core version at install time.
 
 ## Usage
 
@@ -37,7 +39,14 @@ await initIdentityProvider({
 
 ## Migrations
 
-Raw `.sql` files under `src/migrations/sql/`, applied in order by `runMigrations(pool)`, tracked in an `idp_schema_migrations` table. **Not** run automatically by `createPostgresStorage()` — call it explicitly at your own deploy/startup step (concurrent DDL from multiple instances booting at once is a real risk otherwise). `createPostgresStorage()` does a cheap read-only check on startup that the expected migrations have actually been applied, and throws an actionable error if not; set `config.skipMigrationCheck: true` to skip that round trip (e.g. a CI job reusing a known-good database).
+Raw `.sql` files under `src/migrations/sql/`, applied in order by `runMigrations(pool)`, each in its own transaction, tracked in an `idp_schema_migrations` table. **Not** run automatically by `createPostgresStorage()`; call it explicitly at your own deploy/startup step.
+
+`runMigrations()` is safe to call from several instances at once. It does all its work on one dedicated connection holding a Postgres session-level advisory lock (`pg_advisory_lock(8028622229990892656)`, exported as `MIGRATION_LOCK_KEY`). A second caller blocks until the first finishes, then re-reads `idp_schema_migrations` and applies nothing that's already there. The lock is released in a `finally`, and Postgres also drops it if the process dies mid-migration. Two things to know:
+
+- Through a **transaction-mode** connection pooler (e.g. PgBouncer `pool_mode=transaction`), session-level advisory locks aren't reliable. Point `runMigrations()` at a direct or session-mode connection.
+- A caller waits as long as another instance is migrating. If you want a bound, set `lock_timeout` / `statement_timeout` on the migration pool.
+
+`createPostgresStorage()` does a cheap read-only check on startup that the expected migrations have been applied, and throws an actionable error if not. Set `config.skipMigrationCheck: true` to skip that round trip (e.g. a CI job reusing a known-good database).
 
 ## Schema notes
 
@@ -52,7 +61,16 @@ Raw `.sql` files under `src/migrations/sql/`, applied in order by `runMigrations
 The test suite uses [`@electric-sql/pglite`](https://pglite.dev/) + [`@electric-sql/pglite-socket`](https://www.npmjs.com/package/@electric-sql/pglite-socket) — a real, WASM-compiled Postgres running in-process, exposed over a genuine wire-protocol TCP socket, so repository code runs against an entirely unmodified `pg.Pool`. No Docker/container is required to run `npm test`.
 
 ```bash
-npm test
+npm test                  # against the local ../identity checkout (file: dev dependency)
+npm run test:published    # against the published @okeav/idp-core from the registry
+```
+
+`npm run test:published` copies `package.json`, `src/` and `test/` into a temp directory, installs the published `@okeav/idp-core` in the `peerDependencies` range there (never the local folder), and runs the same suite. Run it before releasing, so an adapter release that only works with an unreleased core is caught. Set `KEEP_TEST_DIR=1` to keep the temp copy.
+
+pglite-socket multiplexes every connection onto one PGlite session, and advisory locks are per-session, so the concurrent-migration tests emulate the lock per connection (all other SQL still runs against pglite). To run the same scenario against a real Postgres, set `IDP_PG_TEST_URL` (it creates and drops a throwaway schema):
+
+```bash
+IDP_PG_TEST_URL=postgres://postgres:postgres@localhost:5432/postgres npm test
 ```
 
 ## What this package does not do

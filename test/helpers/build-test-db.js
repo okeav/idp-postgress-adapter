@@ -37,8 +37,9 @@ const TABLES = [
  *
  * One instance is meant to be shared across an entire test file via
  * `before`/`after`; call `truncateAll()` between tests for isolation.
+ * Pass `{ migrate: false }` for an empty database (migration tests).
  */
-export async function buildTestDb() {
+export async function buildTestDb({ migrate = true } = {}) {
     const db = await PGlite.create();
     const port = await getFreePort();
     // maxConnections defaults to 1 in pglite-socket (PGlite itself is a
@@ -51,7 +52,7 @@ export async function buildTestDb() {
     await server.start();
 
     const pool = new Pool({ host: '127.0.0.1', port, database: 'postgres', user: 'postgres' });
-    await runMigrations(pool);
+    if (migrate) await runMigrations(pool);
 
     return {
         pool,

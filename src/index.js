@@ -9,7 +9,7 @@ import { PgVerificationTokenRepository } from './repositories/pg-verification-to
 import { PgServiceKeyRepository } from './repositories/pg-service-key.repository.js';
 import { PgCredentialRepository } from './repositories/pg-credential.repository.js';
 
-export { runMigrations } from './migrations/run-migrations.js';
+export { runMigrations, MIGRATION_LOCK_KEY } from './migrations/run-migrations.js';
 
 /**
  * Postgres storage adapter for @okeav/idp-core. Wire it in via

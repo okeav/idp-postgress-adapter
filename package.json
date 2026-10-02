@@ -1,6 +1,6 @@
 {
   "name": "@okeav/idp-core-postgres",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "PostgreSQL storage adapter for @okeav/idp-core.",
   "type": "module",
   "license": "MIT",
@@ -31,10 +31,14 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "test": "node --test"
+    "test": "node --test",
+    "test:published": "node scripts/run-against-published-core.js"
   },
   "dependencies": {
     "pg": "^8.22.0"
+  },
+  "peerDependencies": {
+    "@okeav/idp-core": "^0.2.1"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.4",
